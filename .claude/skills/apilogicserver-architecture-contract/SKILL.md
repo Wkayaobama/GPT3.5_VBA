@@ -261,7 +261,7 @@ No invented items; each is evidenced or explicitly docs-only.
 6. **The admin SPA is a served, minified artifact** (verified in `ui/admin/admin_loader.py`): the customization surface is `ui/admin/admin.yaml` only; the React internals live in the venv package, not your repo. Needing more UI than the yaml allows means a custom app (`ui/` react apps, `genai-add-app`), not patching SRA.
 7. **Whole-runtime version pinning rides on one package** (verified): project `requirements.txt` is just `ApiLogicServer`, so Flask/SQLAlchemy/SAFRS/LogicBank versions float with it. Reproducibility therefore depends on venv discipline — **apilogicserver-build-and-env**.
 8. **Rule edits require a restart** (invariant 6 corollary, verified: activation happens once in `api_logic_server_setup`). No hot reload of logic; plan restarts into every change procedure (**apilogicserver-change-control**).
-9. **CLI help drift** (verified): 17.03.19 help text claims `gail | gal` synonyms that are not installed, and `ApiLogicServer version` is not a command (use `als welcome` / `als about`). Full catalog: **apilogicserver-cli-and-config**.
+9. **No `version` subcommand** (verified 2026-08-26): `ApiLogicServer version` is not a command in 17.03.19 — use `als welcome` (version banner) or `als about` (system info). The help text's `gail | gal` synonyms ARE installed, working entry points — six equivalents in total (`ApiLogicServer`, `als`, `genai-logic`, `gail`, `gal`, `gl`, all declared in `entry_points.txt` and executing; an earlier capture wrongly recorded `gail`/`gal` as absent). Script against `als`/`ApiLogicServer` for portability. Full catalog: **apilogicserver-cli-and-config**.
 
 Anything that changes files to address these goes through the gates in **apilogicserver-change-control** — no exceptions.
 
@@ -281,7 +281,7 @@ Anything that changes files to address these goes through the gates in **apilogi
 Volatile facts, each with a one-line re-verification command (run from a project root unless noted):
 
 - Installed version and product name (17.03.19 / Genai-Logic): `als welcome`
-- Command list / help drift (`gail|gal` absent, no `version` command): `ApiLogicServer --help`
+- Command list / entry points (six synonyms incl. `gail|gal|gl` installed and working, verified 2026-08-26; still no `version` command): `ApiLogicServer --help` and `ls "$(dirname "$(command -v als)")"`
 - Startup order (models → customize_models → activate_logicbank → expose_models → expose_services → configure_auth): `grep -n "activate_logicbank\|expose_models\|expose_services\|configure_auth" config/server_setup.py`
 - Config precedence (defaults → Config → CLI → APILOGICPROJECT_* env): `grep -n "from_object\|get_cli_args\|from_prefixed_env" api_logic_server_run.py`
 - Env names in config: `grep -n "SECURITY_ENABLED\|OPT_LOCKING\|KAFKA_SERVER\|APILOGICPROJECT_" config/config.py`

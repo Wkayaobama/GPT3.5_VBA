@@ -334,7 +334,7 @@ Options:
   --help       Show this message and exit.
 ```
 
-Per docs it (1) creates the `SysMcp` table (a `request` column), (2) adds the after-flush logic, (3) customizes the Admin App — effects not executed here (mutating CLI was out of scope). Verified negative: a fresh `basic_demo` has `SysEmail` but **no** `SysMcp` in `database/models.py` until this command runs. It is a schema + logic change: run it through **apilogicserver-change-control** gates like any other.
+Per docs it (1) creates the `SysMcp` table, (2) adds the after-flush logic, (3) customizes the Admin App — effects not executed here (mutating CLI was out of scope). **NL-column name — a real docs-vs-install divergence (noted 2026-08-25):** the docs' Integration-MCP page says the table "requires a column called `prompt`", but the shipped 17.03.19 executor's own curl examples (its docstring; quoted in §3c above) POST attribute `request`. Neither project here has run the command, so the created column is unverifiable in this workspace — go with `request` per the shipped source, and verify right after running `genai-add-mcp-client` (`grep -n -A 8 "class SysMcp" database/models.py`). Verified negative: a fresh `basic_demo` has `SysEmail` but **no** `SysMcp` in `database/models.py` until this command runs. It is a schema + logic change: run it through **apilogicserver-change-control** gates like any other.
 
 ### 3e. Trying MCP without an LLM key (verified on disk)
 
@@ -511,6 +511,7 @@ Volatile facts and how to re-verify each (run from any created project's root, v
 - MCP discovery source files — `ls docs/mcp_learning/ integration/mcp/`
 - `genai-add-mcp-client` options — `als genai-add-mcp-client --help`
 - SysMcp presence (before/after add) — `grep -n "SysMcp\|SysEmail" database/models.py`
+- SysMcp NL-column name (docs say `prompt`, shipped 17.03.19 executor examples say `request` — divergence noted 2026-08-25) — after running `genai-add-mcp-client`: `grep -n -A 8 "class SysMcp" database/models.py`; executor side: `grep -n '"request"\|"prompt"' integration/mcp/mcp_client_executor.py`
 - RowDictMapper signature and mappers — `ls integration/row_dict_maps/ && grep -n "def __init__" integration/system/RowDictMapper.py`
 - B2B endpoint registration — `grep -n "OrderB2B\|expose_object" api/customize_api.py` and check `/api/swagger.json`
 - n8n config block and env overrides — `grep -n "N8N\|wh_" config/config.py integration/n8n/n8n_producer.py`

@@ -446,7 +446,7 @@ Consequences for API work:
 
 - Never duplicate a validation or computation in an endpoint or client "for safety" — it will drift from `logic/declare_logic.py`, which already fires everywhere. Add rules via **apilogicserver-logic-patterns**.
 - A "simple" PATCH can legitimately return a 400 naming a *different* table (the constraint above is on `Customer`, the PATCH was on `Item`/`OrderDetail`) — that is the chain working, not a routing bug.
-- The only way around the rules is raw SQL outside the session — forbidden except by the narrow waiver in **apilogicserver-change-control**; symptoms of doing it anyway ("stale sums") are cataloged there and in **apilogicserver-debugging-playbook**.
+- The only way around the rules is raw SQL outside the session — forbidden except by the narrow waiver in **apilogicserver-change-control** §6 NN-1 (rule-free databases such as the auth DB; one-time backfill of a newly added aggregate column); symptoms of doing it anyway ("stale sums") are cataloged there and in **apilogicserver-debugging-playbook**.
 
 ## Provenance and maintenance
 

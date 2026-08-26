@@ -78,7 +78,7 @@ Notes, all verified 2026-08-23, Genai-Logic 17.03.19 unless marked:
 1. **`als genai` OVERWRITES.** The help says "(overwrites)" — never point `--using` at a name whose project directory holds uncommitted work. Commit first (change-control non-negotiable).
 2. **17.03.19 help-text defects (verified):** in `als genai --help`, `--temperature` is described as "Number of test data rows", `--use-relns` as "Project location", and `--active-rules` as "Show this message and exit." — the descriptions are misaligned. Trust the flag *names*; for semantics of anything beyond `--using`, `--db-url`, `--genai-version`, `--repaired-response`, `--retries`, consult the WebGenAI-CLI docs page, and treat those flags as **per docs, not live-verified**.
 3. The docs' Sample-Genai page also shows `--gen-using-file=...` (simulate without an API key); that flag is **not** listed in the installed 17.03.19 `als genai --help` — per docs, not live-verified; expect it may be absent.
-4. Entry points installed: `ApiLogicServer`, `als`, `genai-logic` (all equivalent). Help text mentions `gail | gal` synonyms — those are NOT installed in 17.03.19.
+4. Entry points installed: SIX equivalents — `ApiLogicServer`, `als`, `genai-logic`, `gail`, `gal`, `gl` — all declared in `entry_points.txt` and verified working (2026-08-26; an earlier capture wrongly recorded `gail`/`gal` as absent). Script against `als`/`ApiLogicServer` for portability.
 5. Full non-genai command catalog → **apilogicserver-cli-and-config**.
 
 ### 1.3 What the LLM produces vs. what conventional generation produces

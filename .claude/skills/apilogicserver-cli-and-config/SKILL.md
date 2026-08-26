@@ -31,25 +31,26 @@ This is the single home for the CLI command/flag catalog and every configuration
 
 ## 1. CLI identity and version (verified 2026-08-23, Genai-Logic 17.03.19)
 
-Five console entry points are installed by the package and are byte-identical dispatchers — each imports `api_logic_server_cli.cli.start` and calls it, which prints the banner and invokes the same click command group:
+Six console entry points are installed by the package (all declared in `apilogicserver-17.3.19.dist-info/entry_points.txt`; re-verified 2026-08-26) and are byte-identical dispatchers — each imports `api_logic_server_cli.cli.start` and calls it, which prints the banner and invokes the same click command group:
 
 | Entry point | Status (this install) |
 |---|---|
 | `ApiLogicServer` | verified, works |
-| `als` | verified, works (shortest — used throughout this library) |
+| `als` | verified, works (shortest common form — used throughout this library) |
 | `genai-logic` | verified, works |
 | `gail` | verified present and working (`gail welcome` exits 0) |
 | `gal` | verified present and working (`gal welcome` exits 0) |
+| `gl` | verified present and working (`gl welcome` exits 0) |
 
 Notes:
 
-- Docs pages use `ApiLogicServer`, `als`, and `genai-logic` interchangeably. All commands below work under any of the five names.
+- Docs pages use `ApiLogicServer`, `als`, `genai-logic`, and `gail` interchangeably. All commands below work under any of the six names.
 - There is **no** `als version` command in 17.03.19 (it errors). Use:
   - `als welcome` — prints "Welcome to Genai-Logic 17.03.19" and exits ("Just print version and exit").
   - `als about` — version plus install path, PYTHONPATH, recent changes, system info.
 - The click group asserts Python >= 3.10 (excluding 3.11.0/3.11.1) when run as a script; interpreter problems belong to **apilogicserver-build-and-env**.
 
-Re-verify entry points at any time: `ls "$(dirname "$(command -v als)")" | grep -iE 'apilogicserver|als|gail|gal|genai'`
+Re-verify entry points at any time: `ls "$(dirname "$(command -v als)")" | grep -ixE 'apilogicserver|als|gail|gal|gl|genai-logic'` — the `-x` (whole-line) anchoring matters: an unanchored pattern without a `gl` alternative cannot match the two-character `gl`, which is exactly how an earlier capture undercounted.
 
 ---
 
@@ -418,7 +419,7 @@ Follow in order; the final gate is **apilogicserver-change-control** (config.py 
 | Volatile fact | One-line re-check (run in any project / venv) |
 |---|---|
 | Installed version is 17.03.19 | `als welcome` |
-| Five equivalent entry points incl. `gail`/`gal` | `ls "$(dirname "$(command -v als)")" \| grep -iE 'als\|gail\|gal\|genai\|ApiLogicServer'` |
+| Six equivalent entry points incl. `gail`/`gal`/`gl` | `ls "$(dirname "$(command -v als)")" \| grep -ixE 'apilogicserver\|als\|gail\|gal\|gl\|genai-logic'` — or list the declaration: `cat "$(python -c 'import api_logic_server_cli,os;print(os.path.dirname(os.path.dirname(api_logic_server_cli.__file__)))')"/apilogicserver-*.dist-info/entry_points.txt` |
 | Command list (25 visible) | `als --help` |
 | `create` flag set / defaults | `als create --help` (names only — meanings garble; see section 3) |
 | `--infer-primary-key` still exists | `als create --help \| grep infer-primary-key` |
@@ -440,7 +441,7 @@ Follow in order; the final gate is **apilogicserver-change-control** (config.py 
 
 ## Provenance and maintenance
 
-- CLI name equivalence (ApiLogicServer/als/genai-logic/gail/gal): re-check `ls "$(dirname "$(command -v als)")"` and `gail welcome`. Note: an earlier ground-truth pass recorded gail/gal as absent; direct execution on 2026-08-23 found all five installed and working — always re-run the check on a fresh install.
+- CLI name equivalence (ApiLogicServer/als/genai-logic/gail/gal/gl): re-check `ls "$(dirname "$(command -v als)")"` and `gail welcome` / `gl welcome`. Note: an earlier ground-truth pass recorded gail/gal as absent, and this skill briefly undercounted five — both errors trace to grep patterns that could not match the names (nothing in `als|gail|gal|genai|ApiLogicServer` matches the two-character `gl`); direct execution (2026-08-23, re-verified 2026-08-26) found all six installed and working — always re-run the check on a fresh install with an anchored pattern (`grep -ixE`) or read `entry_points.txt` directly.
 - Version / command list: `als welcome`; `als --help`.
 - Flag meanings vs garbled help: compare `als create --help` against `@click.option` declarations in the installed `api_logic_server_cli/cli.py`.
 - db-url shorthands: `als examples`, and the resolver in `api_logic_server_cli/create_from_model/api_logic_server_utils.py`.

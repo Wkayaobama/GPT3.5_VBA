@@ -317,7 +317,7 @@ The report ("created during test suite execution", per docs Behave-Logic-Report)
 5. Check state hygiene: did mutations get restored/documented? Could a dirty database have produced the observation?
 6. Verdict in writing: SURVIVED (→ eligible for S4a via **apilogicserver-change-control**) or BROKEN (→ back to S1, or S4b with an archaeology entry).
 
-**Factual note on this library itself:** the 18-skill library you are reading went through a multi-reviewer adversarial pass before merge, reviewing under three lenses: (1) **live-install accuracy** — every `verified` label re-checkable against a Genai-Logic 17.03.19 install; (2) **docs fidelity** — no claim may contradict the official docs, and docs-only material is labeled as such; (3) **cross-skill consistency** — one home per fact, siblings cross-referenced by name. That pass is why the labels here can be trusted; it is not a claim that every sentence is beyond error — re-verify volatile facts per the Provenance section.
+**This library holds itself to the same bar:** the 18 skills are subject to the assigned-refutation practice above, under three lenses — (1) **live-install accuracy**: every `verified` label re-checkable against a Genai-Logic 17.03.19 install; (2) **docs fidelity**: no claim may contradict the official docs without saying so, and docs-only material is labeled as such; (3) **cross-skill consistency**: one home per fact, siblings cross-referenced by name. Trust a label only as far as it is checkable — a `verified` fact names its date and version and can be re-run; that re-runnability, not any past review, is the ground for trust. Re-verify volatile facts per each skill's Provenance section, and treat a label that fails its own re-check as BROKEN (checklist item 6).
 
 ---
 

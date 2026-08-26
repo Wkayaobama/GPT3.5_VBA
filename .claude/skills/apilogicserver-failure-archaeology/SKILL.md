@@ -223,14 +223,14 @@ Jargon used below, defined once:
 |---|-----------|----------------|------------|--------------|
 | 1 | **Port 5656 collision** — second server start fails: "Port 5656 is in use by another program … Address already in use" | `curl -s --noproxy '*' http://localhost:5656/` answers → something already listening | Stop the other server, or run on another port (`APILOGICPROJECT_PORT` / `--port` → **apilogicserver-cli-and-config**; stop/start → **apilogicserver-operate-and-deploy**) | verified 2026-08-23 (live collision transcript), Genai-Logic 17.03.19 |
 | 2 | **venv-not-active installs** — `pip install` landed in system Python; `command not found: als` or `No module named ...` | `which als` does not print a path under your venv's `bin/` | Activate the venv, reinstall; full repair → **apilogicserver-build-and-env** §3–§5 | verified 2026-08-23 (install performed in venv; entry points enumerated) |
-| 3 | **Multi-Python PATH confusion** — old version runs despite new install; or docs-era commands fail | `als welcome` → expect `Welcome to Genai-Logic 17.03.19`. Note: `ApiLogicServer version` is NOT a command in 17.03.19; help-text synonyms `gail`/`gal` are NOT installed entry points | Fix interpreter/PATH per **apilogicserver-build-and-env** §1, §4 (`python venv_setup/py.py sys-info` per docs) | verified 2026-08-23 (command list and entry points from the live install) |
+| 3 | **Multi-Python PATH confusion** — old version runs despite new install; or docs-era commands fail | `als welcome` → expect `Welcome to Genai-Logic 17.03.19`. Note: `ApiLogicServer version` is NOT a command in 17.03.19; the help-text synonyms `gail`/`gal` (and `gl`) ARE installed, working entry points — a working `gail` is a healthy install, not PATH damage | Fix interpreter/PATH per **apilogicserver-build-and-env** §1, §4 (`python venv_setup/py.py sys-info` per docs) | verified 2026-08-23; entry points corrected and re-verified 2026-08-26 (all six execute) |
 | 4 | **DB driver builds** — pyodbc: `fatal error: 'sql.h' file not found`; psycopg2/pg_config errors; Oracle needs thick-client mode; macOS `error: Unsupported architecture` (fix: `export ARCHFLAGS="-arch x86_64"`); SSL `CERTIFICATE_VERIFY_FAILED` | The compiler/SSL error text itself | OS-specific headers/clients per **apilogicserver-build-and-env** §6 | per docs (Troubleshooting), not live-verified |
 
 **Investigation:** Each sub-battle was chased at least once as a suspected engine bug; each closed as environment. The docs' Troubleshooting page catalogs the long tail: Docker port reassignment to 5657, `Dynamic model import failed` on odd schemas, PyCharm venv quirks, browser cache hiding admin-app changes, Azure SQL auth-type mismatches.
 
 **Root cause / resolution:** Python-ecosystem environment variance, not ALS logic. Standing order: before filing any bug, run the 60-second environment self-test in **apilogicserver-build-and-env** §4 and the port probe above.
 
-**Evidence:** items 1–3 verified 2026-08-23, Genai-Logic 17.03.19 (live install and collision transcript); https://apilogicserver.github.io/Docs/Troubleshooting/ (item 4 and long tail, per docs).
+**Evidence:** items 1–3 verified 2026-08-23, Genai-Logic 17.03.19 (live install and collision transcript); item 3's entry-point fact corrected 2026-08-26 — all six synonyms (`ApiLogicServer`, `als`, `genai-logic`, `gail`, `gal`, `gl`) are declared in `entry_points.txt` and execute; https://apilogicserver.github.io/Docs/Troubleshooting/ (item 4 and long tail, per docs).
 
 **Status:** **MONITOR.** Settled individually, but the cluster regenerates with every new machine, container, and Python minor version.
 
@@ -269,7 +269,7 @@ Triage rule for everyone downstream: a TypeError stack trace mentioning `formatE
 
 ## A9 — The legacy exhibit: `turbo3.5_excel_vba`
 
-**ID:** A9 · **Title:** The legacy exhibit — this repo's Excel/VBA API caller · **Date/era:** repo has 2 commits, no CI/tests/docs (verified 2026-08-23); analyzed line-by-line 2026-08-24.
+**ID:** A9 · **Title:** The legacy exhibit — this repo's Excel/VBA API caller · **Date/era:** the legacy system landed in 2 commits with no CI/tests/docs (re-verified 2026-08-26: `git log --oneline -- turbo3.5_excel_vba api_Key.xlsm | wc -l` → 2; the repo's TOTAL commit count has since grown as this skill library landed); analyzed line-by-line 2026-08-24.
 
 **Symptom or claim:** "It works — why replace 42 lines of VBA?" The file `turbo3.5_excel_vba` (repo root, beside `api_Key.xlsm`) is a VBA `Function OpenAI(prompt As String) As String` calling the OpenAI chat-completions API from Excel. It is this project's canonical specimen of ungoverned application-embedded glue.
 
@@ -301,9 +301,9 @@ Triage rule for everyone downstream: a TypeError stack trace mentioning `formatE
 5. **Whole file — no error handling, no evidence:** no `On Error`; `response.Status` never read (an error body is parsed as if success); no timeout configuration; no retry/backoff for rate limits; no logging or audit trail of what was sent or received. The call is synchronous (`response.Open "POST", url, False`), freezing Excel for the duration. Model (`gpt-3.5-turbo`) and temperature are hardcoded in the client.
 6. **Governance:** the business behavior (what gets asked, what comes back, what decisions it feeds) lives client-side in per-user workbook copies — unversioned, untested, unreviewed, invisible to IT.
 
-**Root cause / resolution:** Not "bad VBA" — the pattern itself: **application-embedded glue with no contract** (hand-built wire format in both directions), **no gating** (no review, tests, or CI — 2 commits total), **no evidence** (no logs, no audit). Every failure mode above is a special case of those three absences. Resolution path: replace, don't patch — server-side and governed, per **apilogicserver-modernization-campaign** (the gated legacy-to-ALS campaign); the server-side request pattern that supersedes client-embedded calls is owned by **apilogicserver-integration-patterns**.
+**Root cause / resolution:** Not "bad VBA" — the pattern itself: **application-embedded glue with no contract** (hand-built wire format in both directions), **no gating** (no review, tests, or CI — the legacy files landed in 2 commits), **no evidence** (no logs, no audit). Every failure mode above is a special case of those three absences. Resolution path: replace, don't patch — server-side and governed, per **apilogicserver-modernization-campaign** (the gated legacy-to-ALS campaign); the server-side request pattern that supersedes client-embedded calls is owned by **apilogicserver-integration-patterns**.
 
-**Evidence:** the file itself at repo root (`turbo3.5_excel_vba`, read in full 2026-08-24); repo state (2 commits, no CI/tests/docs) verified 2026-08-23.
+**Evidence:** the file itself at repo root (`turbo3.5_excel_vba`, read in full 2026-08-24); legacy history (2 commits touching `turbo3.5_excel_vba`/`api_Key.xlsm`, no CI/tests/docs) re-verified 2026-08-26 via `git log --oneline -- turbo3.5_excel_vba api_Key.xlsm`.
 
 **Status:** **SETTLED-BY-REPLACEMENT-PLAN.** Do not invest in hardening this file; it exists as the before-picture and the campaign's acceptance foil.
 
@@ -345,11 +345,11 @@ Volatile facts and their 1-line re-verification commands (run from any ALS proje
 
 - **A8 bug presence** (v17.03.19): `grep -n "splitlines('" config/server_setup.py` — expect line ~203 `result.splitlines('\n')`; empty = fixed, update A8.
 - **A8 TypeError semantics** (Python-level, version-independent): `python -c "'a\nb'.splitlines('\n')"` — expect `TypeError: 'str' object cannot be interpreted as an integer`.
-- **Installed version / entry points** (A7 item 3): `als welcome` — expect `Welcome to Genai-Logic 17.03.19` (or newer; re-stamp entries on bump). `ApiLogicServer version` erroring is expected in 17.03.19.
+- **Installed version / entry points** (A7 item 3): `als welcome` — expect `Welcome to Genai-Logic 17.03.19` (or newer; re-stamp entries on bump). `ApiLogicServer version` erroring is expected in 17.03.19; `gail`/`gal`/`gl` succeeding is expected too (six synonym entry points, re-verified 2026-08-26).
 - **A5 comment still shipped**: `grep -n "declarative-vs-procedural-comparison" logic/declare_logic.py` — expect the GitHub link line in any freshly created basic_demo-style project.
 - **A6 file classes**: after any rebuild, `ls ui/admin/` — `admin-created.yaml` / `admin-merge.yaml` present means the merge dance is pending (runbook: apilogicserver-change-control).
 - **A7 port collision**: with one server running, `curl -s --noproxy '*' -o /dev/null -w "%{http_code}\n" http://localhost:5656/` — non-`000` means the port is taken; a second `python api_logic_server_run.py` will report "Port 5656 is in use by another program".
-- **A9 exhibit unchanged**: `wc -l turbo3.5_excel_vba` at this repo's root (42 content lines as analyzed) and re-read lines 28–37 for the quoted loop.
+- **A9 exhibit unchanged**: `wc -l turbo3.5_excel_vba` at this repo's root (42 content lines as analyzed) and re-read lines 28–37 for the quoted loop; legacy history: `git log --oneline -- turbo3.5_excel_vba api_Key.xlsm | wc -l` → 2 (the repo's TOTAL commit count grows with this skill library — do not use it as the legacy measure).
 - **Docs-derived entries (A1–A5, A10 claims, A7 item 4)**: re-fetch the URLs below on any docs revision; the numbers (6500 sites, 700 sites, $3B IPO, ~97%, "minutes → 2 seconds", "~40X") are the docs' claims, not measurements reproduced here.
 
 Grounded in: https://apilogicserver.github.io/Docs/FAQ-RETE/, https://apilogicserver.github.io/Docs/FAQ-Versata/, https://apilogicserver.github.io/Docs/FAQ-Live-API-Creator/, https://apilogicserver.github.io/Docs/Tech-Proven/, https://apilogicserver.github.io/Docs/FAQ-Overview/, https://apilogicserver.github.io/Docs/Troubleshooting/, https://apilogicserver.github.io/Docs/Tech-Realizations/ and a live Genai-Logic 17.03.19 install (2026-08-23). Live checks ran against real created projects (basic_demo, nw_sample) and a running server, verified against a live install; the legacy exhibit `turbo3.5_excel_vba` was read in full from this repository.

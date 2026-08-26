@@ -69,8 +69,8 @@ This skill is the end-to-end, gated runbook for the owner-ratified hardest probl
 ```bash
 cat turbo3.5_excel_vba          # the whole legacy "system": one VBA function
 wc -l turbo3.5_excel_vba        # expect: 44 (42 content lines + trailing blanks)
-ls -la                          # expect: turbo3.5_excel_vba, api_Key.xlsm, .git — nothing else
-git log --oneline | wc -l       # expect: 2 (two commits, no CI, no tests, no docs)
+ls -la                          # expect: turbo3.5_excel_vba, api_Key.xlsm, .git — plus .claude/ (this skill library); the legacy system itself is just the two files
+git log --oneline -- turbo3.5_excel_vba api_Key.xlsm | wc -l   # expect: 2 (the legacy system landed in 2 commits — no CI, no tests, no docs; the repo's TOTAL count grows as this library lands, so scope the check to the legacy files)
 ```
 
 **EXPECTED observation** (verified 2026-08-23, Genai-Logic-era workspace; file read in full). The file is `Function OpenAI(prompt As String) As String`: it string-concatenates a JSON body for `https://api.openai.com/v1/chat/completions` (model `gpt-3.5-turbo`, temperature 0, both hardcoded), sends it synchronously via `MSXML2.ServerXMLHTTP` with a hardcoded `apiKey`, then "parses" the response with `InStr`. The parse loop, quoted verbatim from the file:
@@ -129,7 +129,7 @@ als welcome
 Welcome to Genai-Logic 17.03.19
 ```
 
-Notes that prevent an hour of confusion (all verified): `pip install ApiLogicServer` installs the package named **Genai-Logic**; installed CLI entry points are `ApiLogicServer`, `als`, `genai-logic` (the help text's `gail`/`gal` synonyms are NOT installed in 17.03.19); `ApiLogicServer version` is NOT a command — use `als welcome` (version) or `als about` (system info).
+Notes that prevent an hour of confusion (all verified): `pip install ApiLogicServer` installs the package named **Genai-Logic**; SIX equivalent CLI entry points are installed — `ApiLogicServer`, `als`, `genai-logic`, `gail`, `gal`, `gl` (all verified working 2026-08-26; official docs often write commands as `gail ...` — that works, but script against `als`/`ApiLogicServer` for portability); `ApiLogicServer version` is NOT a command — use `als welcome` (version) or `als about` (system info).
 
 **GATE.** `als welcome` exits 0 and prints `Welcome to Genai-Logic <version>`. Record the version — every later "verified" label is relative to it.
 
@@ -174,7 +174,7 @@ Startup banner, excerpted verbatim from a live start (middle sections elided):
 ```
 The following rules have been activated
 ...
-Logic Bank 1.32.00 - 34 rules loaded
+Logic Bank 1.32.00 - 13 rules loaded
 Exposing /Customer
 ...
 Authentication loaded -- api calls now require authorization header
@@ -188,7 +188,7 @@ API Logic Project (name: basic_demo) starting:
 *************************************************************************
 ```
 
-"Kafka mode: FALLBACK" without a broker is normal, not an error (verified). Rule count differs per project; presence of "rules have been activated" is the health marker.
+"Kafka mode: FALLBACK" without a broker is normal, not an error (verified). Rule count differs per project (verified in logs 2026-08-25: basic_demo 13, nw_sample 34); presence of "rules have been activated" is the health marker.
 
 Then, in a second terminal, login and read (shapes verified live):
 
@@ -420,7 +420,7 @@ returned (verified 2026-08-25 against the live 17.03.19 server; excerpt):
  "learning": "To issue one request per row from a prior step (fan-out), use the syntax: ...", ...}
 ```
 
-The created project ships `integration/mcp/mcp_client_executor.py` and `integration/mcp/mcp_server_discovery.json` (verified on disk). Per docs (Integration-MCP; not live-verified here — the live-LLM leg needs `APILOGICSERVER_CHATGPT_APIKEY`): `als genai-add-mcp-client` installs the `SysMcp` request-pattern table (insert a row with a `prompt` column → logic invokes the client executor); `python integration/mcp/mcp_client_executor.py mcp` runs the executor; and — the governance property — "MCP also respects your security settings ... API calls are made with the current request header from your login," so role-based grants bind AI-driven calls too. Wiring detail and the request pattern: **apilogicserver-integration-patterns**; AI-output guardrails: **apilogicserver-genai-development**.
+The created project ships `integration/mcp/mcp_client_executor.py` and `integration/mcp/mcp_server_discovery.json` (verified on disk). Per docs (Integration-MCP; not live-verified here — the live-LLM leg needs `APILOGICSERVER_CHATGPT_APIKEY`): `als genai-add-mcp-client` installs the `SysMcp` request-pattern table (insert a row carrying the NL request → logic invokes the client executor; the shipped 17.03.19 executor's own curl examples name the attribute `request`, while the docs page says `prompt` — a real docs-vs-install divergence, so verify the created column at `genai-add-mcp-client` time; details: **apilogicserver-integration-patterns**); `python integration/mcp/mcp_client_executor.py mcp` runs the executor; and — the governance property — "MCP also respects your security settings ... API calls are made with the current request header from your login," so role-based grants bind AI-driven calls too. Wiring detail and the request pattern: **apilogicserver-integration-patterns**; AI-output guardrails: **apilogicserver-genai-development**.
 
 ### Path B (optional bridge, **candidate — not live-verified**; no Excel runtime exists in this workspace)
 
@@ -539,6 +539,6 @@ Volatile facts and a one-line re-verification for each (run in any project unles
 - Behave golden counts (7 features / 26 scenarios / 83 steps, ~1.4s) and report: `cd test/api_logic_server_behave && python behave_run.py --outfile=logs/behave.log` (summary on console) then `python behave_logic_report.py run` → `reports/Behave Logic Report.md`.
 - MCP discovery endpoint: `curl -s http://localhost:5656/.well-known/mcp.json` → JSON with `base_url`, `description`, `learning`.
 - Docker script defaults: `head -15 devops/docker-image/build_image.sh` → `projectname=`, `repositoryname=`, `version=`.
-- Legacy exhibit unchanged: `wc -l turbo3.5_excel_vba` → 44; `git log --oneline | wc -l` → 2 (repo root).
+- Legacy exhibit unchanged: `wc -l turbo3.5_excel_vba` → 44; `git log --oneline -- turbo3.5_excel_vba api_Key.xlsm | wc -l` → 2 (scoped to the legacy files, re-verified 2026-08-26 — the repo's total commit count grows with this skill library).
 
 Grounded in: https://apilogicserver.github.io/Docs/Sample-Basic-Demo/, https://apilogicserver.github.io/Docs/Tutorial/, https://apilogicserver.github.io/Docs/Integration-MCP/, https://apilogicserver.github.io/Docs/Tech-DSL/ and a live Genai-Logic 17.03.19 install (2026-08-23; live server re-probed 2026-08-25) — verified against a live install in this workspace's scratchpad reference projects.

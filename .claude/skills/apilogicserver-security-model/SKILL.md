@@ -69,7 +69,7 @@ als add-auth --provider-type=None                                               
 ```
 
 Spelling notes (verified):
-- Docs write these commands as `gail add-auth ...` / `genai-logic ...` — the rebranded names for the same CLI. On this install `als`, `ApiLogicServer`, and `genai-logic` are equivalent entry points; see **apilogicserver-cli-and-config** for the entry-point caveat before trusting `gail`/`gal`.
+- Docs write these commands as `gail add-auth ...` / `genai-logic ...` — the rebranded names for the same CLI. On this install all six entry points are equivalent and verified working (`als`, `ApiLogicServer`, `genai-logic`, `gail`, `gal`, `gl` — so the docs' `gail add-auth` runs as-is); script against `als`/`ApiLogicServer` for portability. Full catalog: **apilogicserver-cli-and-config**.
 - `als add-auth --help` prints `--provider-type` ("sql, keycloak, or none"), `--project-name`, `--db-url` ("auth db loc (local | hardened | SQLAlchemy uri)"), `--api-name` (verified). The live-verified invocation used the underscore spelling `--db_url=auth`; both spellings appear in official docs. If one errors with "no such option", try the other.
 
 ### 2.1 What activation changes on disk (verified in the post-add-auth basic_demo project)
@@ -277,7 +277,7 @@ for uid, pw in con.execute("SELECT id, password_hash FROM User ORDER BY id"):
 EOF
 ```
 
-To add/change users: the auth tables are a normal SQLAlchemy-bound database — edit with sqlite3 (INSERT into `User`, `UserRole`), or point add-auth at your own DB (`--db_url=postgresql://...`, schema per `devops/auth-db/authdb_postgres.sql` / `authdb_mysql.sql`, shipped in the project — verified on disk). Note: in the verified projects the auth tables are **not** exposed at `/api/User` (probe returned 404), so user admin is DB-side; docs mention an auth admin interface (per docs, not live-verified). Any user/role change is a security change → **apilogicserver-change-control** gates.
+To add/change users: the auth tables are a normal SQLAlchemy-bound database — edit with sqlite3 (INSERT into `User`, `UserRole`), or point add-auth at your own DB (`--db_url=postgresql://...`, schema per `devops/auth-db/authdb_postgres.sql` / `authdb_mysql.sql`, shipped in the project — verified on disk). Note: in the verified projects the auth tables are **not** exposed at `/api/User` (probe returned 404), so user admin is DB-side; docs mention an auth admin interface (per docs, not live-verified). Any user/role change is a security change → **apilogicserver-change-control** gates (raw SQL here is sanctioned by its NN-1 waiver (a): the auth DB has no rules to bypass).
 
 ### 5.3 Production warning — non-negotiable
 

@@ -205,12 +205,16 @@ Scenario: add a column `Product.carbon_neutral` (Boolean). Numbered gates in par
 
 ## 6. Non-negotiables (owner-ratified, docs-grounded)
 
-Each: the rule; WHY (mechanism); DETECT (checkable); history pointer.
+Each: the rule; WHY (mechanism); DETECT (checkable); history pointer. NN-1 additionally carries its narrow, written-down WAIVER — the only sanctioned exceptions in this library.
 
 **NN-1 — Never write to the database around the ORM.**
 WHY: rules attach to the SQLAlchemy session's flush events (`before_flush`); a `sqlite3`/psql/DBeaver UPDATE, raw `engine.execute`, or bulk SQL bypasses the session, so derivations, constraints, and events **silently do not fire** — stored aggregates go stale, invalid rows persist, no error is raised anywhere. Mechanism detail: **declarative-rules-reference**; invariant statement: **apilogicserver-architecture-contract** §5.
 DETECT: recompute one aggregate against its children and compare to the stored value — e.g. for the verified basic_demo rules, `Customer.balance` must equal the sum of its unshipped orders' `amount_total`; a mismatch is the fingerprint of an around-the-ORM write. Symptom keyword: "stale sums".
 HISTORY: **apilogicserver-failure-archaeology** (silent-corruption incidents); triage: **apilogicserver-debugging-playbook**.
+WAIVER (narrow — the only two sanctioned around-the-ORM writes; both still pass these gates and land in the change record):
+(a) **rule-free databases** — the auth DB (`authentication_db.sqlite`) has no rules attached, so there is nothing to bypass; sqlite3 INSERTs into `User`/`UserRole` are the documented user-admin procedure (**apilogicserver-security-model** §5.2) and remain a gated security change.
+(b) **one-time initialization of a NEWLY added aggregate column, before its rule owns live traffic** — the engine maintains aggregates by adjustment from a correct starting value, and the docs prescribe a backfill UPDATE for retrofits (**apilogicserver-data-modeling** §4 item 5). Run the backfill before cutover, prove it with the DETECT recompute above, and keep the SQL in the change record.
+Everything else stays forbidden — including seed-row edits where derived columns are involved (§2) and any "quick fix" UPDATE on rule-governed tables.
 
 **NN-2 — Never hand-edit regenerated files outside the recorded policy.**
 WHY: `rebuild-from-database` rewrites `database/models.py` wholesale; edits made there under a DB-first policy are destroyed without warning (the file's own header, §3.1, delegates this to "your database maintenance policy" — so the policy must exist and be written down, §8). `api/expose_api_models.py` says "You typically do not customize this file"; endpoint code belongs in `api/customize_api.py`, kept "separate … to simplify merge if project recreated" (its own comment).

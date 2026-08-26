@@ -1,6 +1,7 @@
 ---
 name: apilogicserver-build-and-env
-description: Environment setup and repair for API Logic Server / Genai-Logic development. Use when installing ApiLogicServer, creating or activating a Python venv, choosing a Python version, wiring VS Code to the right interpreter, setting up DB drivers (psycopg2/PostgreSQL, pyodbc/SQL Server/unixODBC, Oracle thick client), using the Docker image, or upgrading the install. Load on symptoms: "command not found: als", "als: command not found", "No module named", pip installed to the wrong Python, "which python" shows system Python, "Port 5656 is in use by another program", "Address already in use", pg_config/psycopg2 build errors, "sql.h not found"/ODBC driver errors, PowerShell "running scripts is disabled on this system", pip SSL/proxy certificate failures, "ApiLogicServer version" printing usage instead of a version, venv_setup/py.py claiming ApiLogicServer is not installed, M1/ARM install questions, or a cloned project that will not run F5.
+description: >-
+  Environment setup and repair for API Logic Server / Genai-Logic development. Use when installing ApiLogicServer, creating or activating a Python venv, choosing a Python version, wiring VS Code to the right interpreter, setting up DB drivers (psycopg2/PostgreSQL, pyodbc/SQL Server/unixODBC, Oracle thick client), using the Docker image, or upgrading the install. Load on symptoms: "command not found: als", "als: command not found", "No module named", pip installed to the wrong Python, "which python" shows system Python, "Port 5656 is in use by another program", "Address already in use", pg_config/psycopg2 build errors, "sql.h not found"/ODBC driver errors, PowerShell "running scripts is disabled on this system", pip SSL/proxy certificate failures, "ApiLogicServer version" printing usage instead of a version, venv_setup/py.py claiming ApiLogicServer is not installed, M1/ARM install questions, or a cloned project that will not run F5.
 ---
 
 # API Logic Server: Build the Environment, Escape Environment Hell
@@ -331,7 +332,7 @@ Volatile facts and how to re-verify each (run inside an activated install venv, 
 
 - Package version / banner pair (`17.3.19` / `17.03.19`): `als welcome` and `python -m pip show ApiLogicServer | head -2`
 - `ApiLogicServer version` still not a command: `ApiLogicServer version` (expect usage banner, no version line)
-- Entry points actually installed (`als`, `ApiLogicServer`, `genai-logic`, `gail`, `gal`, `gl`): `ls $(python -c "import sys;print(sys.prefix)")/bin | grep -iE "als|gail|gal|genai|ApiLogic"`
+- Entry points actually installed (`als`, `ApiLogicServer`, `genai-logic`, `gail`, `gal`, `gl`): `ls $(python -c "import sys;print(sys.prefix)")/bin | grep -ixE "apilogicserver|als|gail|gal|gl|genai-logic"` (anchored `-x` on purpose — an unanchored pattern with no `gl` alternative cannot match the two-character `gl`)
 - Python floor: `python -c "import importlib.metadata as m; print(m.metadata('ApiLogicServer')['Requires-Python'])"` (expect `>=3.10`)
 - Bundled drivers and platform markers (psycopg2-binary/psycopg, PyMySQL, oracledb-not-on-ARM, no pyodbc): `python -m pip show psycopg2-binary pymysql oracledb pyodbc`
 - Port-collision message text: start a second server on 5656 (expect "Port 5656 is in use by another program."); port flags: `als run --help`
